@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { Telegraf } from "telegraf";
+import cron from "node-cron";
 import { authedGet } from "./api.js";
 
 const token = process.env.BOT_TOKEN;
@@ -28,7 +29,10 @@ const ORDER = Object.keys(LABELS);
 const pad = (n) => String(n).padStart(2, "0");
 const today = () => {
   const d = new Date();
-  return { iso: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`, human: `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}` };
+  return {
+    iso: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
+    human: `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`,
+  };
 };
 const monthRange = () => {
   const d = new Date();
@@ -42,6 +46,33 @@ const monthRange = () => {
 };
 const fullName = (e) => `${e.lastName} ${e.firstName}`.trim();
 const time = (t) => (t ? t.slice(0, 5) : "");
+
+// Отчёт по давомату за сегодня (используется и командой /today, и авто-отчётом).
+async function buildTodayReport() {
+  const t = today();
+  const { data: rows } = await authedGet("/attendance", { date: t.iso });
+
+  const counts = {};
+  let notMarked = 0;
+  for (const r of rows) {
+    if (r.status) counts[r.status] = (counts[r.status] || 0) + 1;
+    else notMarked++;
+  }
+  const summary = ORDER.filter((k) => counts[k]).map((k) => `${LABELS[k]}: ${counts[k]}`);
+  if (notMarked) summary.push(`⬜ Не отмечен: ${notMarked}`);
+
+  let txt = `📋 Давомат — ${t.human}\n\n` + (summary.length ? summary.join("\n") : "Сотрудников нет.");
+
+  const late = rows.filter((r) => r.status === "Late");
+  if (late.length) {
+    txt += "\n\n🟠 Опоздали:\n" + late.map((r) => `• ${fullName(r)}${r.arrivalTime ? ` (${time(r.arrivalTime)})` : ""}`).join("\n");
+  }
+  const absent = rows.filter((r) => r.status === "Absent");
+  if (absent.length) {
+    txt += "\n\n🔴 Отсутствуют:\n" + absent.map((r) => `• ${fullName(r)}`).join("\n");
+  }
+  return txt;
+}
 
 // ===== Команды =====
 bot.start((ctx) =>
@@ -66,29 +97,7 @@ bot.command("ping", (ctx) => ctx.reply("pong 🏓"));
 
 bot.command("today", async (ctx) => {
   try {
-    const t = today();
-    const { data: rows } = await authedGet("/attendance", { date: t.iso });
-
-    const counts = {};
-    let notMarked = 0;
-    for (const r of rows) {
-      if (r.status) counts[r.status] = (counts[r.status] || 0) + 1;
-      else notMarked++;
-    }
-    const summary = ORDER.filter((k) => counts[k]).map((k) => `${LABELS[k]}: ${counts[k]}`);
-    if (notMarked) summary.push(`⬜ Не отмечен: ${notMarked}`);
-
-    let txt = `📋 Давомат — ${t.human}\n\n` + (summary.length ? summary.join("\n") : "Сотрудников нет.");
-
-    const late = rows.filter((r) => r.status === "Late");
-    if (late.length) {
-      txt += "\n\n🟠 Опоздали:\n" + late.map((r) => `• ${fullName(r)}${r.arrivalTime ? ` (${time(r.arrivalTime)})` : ""}`).join("\n");
-    }
-    const absent = rows.filter((r) => r.status === "Absent");
-    if (absent.length) {
-      txt += "\n\n🔴 Отсутствуют:\n" + absent.map((r) => `• ${fullName(r)}`).join("\n");
-    }
-    await ctx.reply(txt);
+    await ctx.reply(await buildTodayReport());
   } catch (err) {
     await ctx.reply("Не удалось получить данные: " + (err.response?.data?.message || err.message));
   }
@@ -120,8 +129,7 @@ bot.command("month", async (ctx) => {
       authedGet("/employees"),
     ]);
     const records = recordsRes.data;
-    const employees = empRes.data;
-    const nameById = Object.fromEntries(employees.map((e) => [e.id, fullName(e)]));
+    const nameById = Object.fromEntries(empRes.data.map((e) => [e.id, fullName(e)]));
 
     const counts = {};
     const lateByEmp = {};
@@ -158,6 +166,29 @@ bot.catch((err) => console.error("Ошибка бота:", err));
 
 bot.launch();
 console.log("🤖 Davomat bot запущен (long polling)");
+
+// ===== Авто-отчёт по расписанию =====
+const reportChatId = process.env.REPORT_CHAT_ID;
+const reportCron = process.env.REPORT_CRON || "30 18 * * *"; // каждый день 18:30
+const reportTz = process.env.REPORT_TZ || "Asia/Tashkent";
+
+if (reportChatId && cron.validate(reportCron)) {
+  cron.schedule(
+    reportCron,
+    async () => {
+      try {
+        await bot.telegram.sendMessage(reportChatId, await buildTodayReport());
+        console.log("🗓  Авто-отчёт отправлен в чат " + reportChatId);
+      } catch (err) {
+        console.error("🗓  Авто-отчёт: ошибка —", err.response?.data?.message || err.message);
+      }
+    },
+    { timezone: reportTz }
+  );
+  console.log(`🗓  Авто-отчёт включён: "${reportCron}" (${reportTz}) → чат ${reportChatId}`);
+} else {
+  console.log("🗓  Авто-отчёт выключен (задайте REPORT_CHAT_ID и корректный REPORT_CRON).");
+}
 
 process.once("SIGINT", () => bot.stop("SIGINT"));
 process.once("SIGTERM", () => bot.stop("SIGTERM"));
