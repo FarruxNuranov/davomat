@@ -1,0 +1,28 @@
+# ===== .NET =====
+**/bin/
+**/obj/
+*.user
+.vs/
+
+# ===== Frontend =====
+**/node_modules/
+**/dist/
+**/.vite/
+
+# ===== База данных (создаётся миграциями) =====
+*.db
+*.db-shm
+*.db-wal
+
+# ===== Загруженные файлы =====
+AuthBackend/Uploads/
+
+# ===== Локальные секреты / окружение =====
+**/appsettings.*.local.json
+**/.env.local
+secrets.json
+
+# ===== ОС / редакторы =====
+.DS_Store
+*.log
+Thumbs.db

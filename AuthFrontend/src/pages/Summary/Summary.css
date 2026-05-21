@@ -1,0 +1,94 @@
+.sum-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.sum-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.sum-header h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.sum-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.sum-error {
+  color: #dc2626;
+  margin: 0;
+  background: rgba(239, 68, 68, 0.08);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+.sum-empty {
+  color: var(--text-3);
+}
+
+.sum-table-wrapper {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: auto;
+}
+
+.sum-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sum-table th,
+.sum-table td {
+  padding: 13px 16px;
+  font-size: 14px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.sum-table thead {
+  background: var(--surface-2);
+  color: var(--text-3);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-weight: 600;
+}
+
+.sum-table thead th {
+  border-bottom: 1px solid var(--border);
+}
+
+.sum-table th:first-child,
+.sum-table td:first-child {
+  text-align: left;
+}
+
+.sum-table td:first-child {
+  font-weight: 500;
+}
+
+.sum-table tbody tr {
+  border-top: 1px solid var(--border);
+  transition: background 0.12s var(--ease);
+}
+
+.sum-table tbody tr:first-child {
+  border-top: none;
+}
+
+.sum-table tbody tr:hover {
+  background: var(--accent-soft);
+}

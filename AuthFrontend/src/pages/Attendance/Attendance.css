@@ -1,0 +1,545 @@
+.att-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.att-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.att-header h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.att-controls {
+  display: flex;
+  gap: 8px;
+}
+
+/* Селекты месяца/года заменены на компонент Dropdown (components/Dropdown). */
+
+.att-export-btn {
+  background: var(--accent-grad);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 9px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 5px 14px rgba(37, 99, 235, 0.24);
+  transition: transform 0.15s var(--ease), filter 0.15s var(--ease);
+}
+
+.att-export-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.att-export-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.att-ai-btn {
+  background: var(--surface);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 9px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s var(--ease), transform 0.15s var(--ease);
+}
+
+.att-ai-btn:hover:not(:disabled) {
+  background: var(--accent-soft);
+  transform: translateY(-1px);
+}
+
+.att-ai-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.att-tg-btn {
+  background: var(--surface);
+  color: #0088cc;
+  border: 1px solid #0088cc;
+  border-radius: var(--radius-sm);
+  padding: 9px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s var(--ease), transform 0.15s var(--ease);
+}
+
+.att-tg-btn:hover:not(:disabled) {
+  background: rgba(0, 136, 204, 0.08);
+  transform: translateY(-1px);
+}
+
+.att-tg-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.att-tg-ok {
+  color: #15803d;
+  margin: 0;
+  background: rgba(34, 197, 94, 0.1);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+.ai-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 18px 20px;
+  animation: pop-in 0.25s var(--ease) both;
+}
+
+.ai-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.ai-panel-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ai-panel-close {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.ai-panel-close:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.ai-panel-body {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+.ai-panel-error {
+  margin: 0;
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.1);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+.att-summary {
+  margin-top: 22px;
+}
+
+.att-summary-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+
+.att-error {
+  color: #dc2626;
+  margin: 0;
+  background: rgba(239, 68, 68, 0.08);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+.att-empty {
+  color: var(--text-3);
+}
+
+/* ===== Календарная сетка ===== */
+.att-cal-wrapper {
+  overflow: auto;
+  max-height: calc(100vh - 190px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.att-cal {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: max-content;
+  min-width: 100%;
+}
+
+.att-cal th,
+.att-cal td {
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  font-size: 13px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.att-cal thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface-2);
+  color: var(--text);
+  padding: 10px 12px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.att-name-first {
+  font-weight: 400;
+  color: var(--text-3);
+  font-size: 12px;
+}
+
+.att-daycell,
+.att-corner {
+  position: sticky;
+  left: 0;
+  background: var(--surface-2);
+  min-width: 66px;
+}
+
+.att-daycell {
+  z-index: 1;
+  padding: 7px 12px;
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.att-corner {
+  z-index: 3;
+  color: var(--text-3);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.att-daynum {
+  font-weight: 700;
+  color: var(--text);
+  margin-right: 6px;
+}
+
+.att-dow {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.att-today .att-daynum {
+  color: var(--accent);
+}
+
+.att-today {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.att-weekend td {
+  background: #fafbfd;
+}
+
+.att-weekend .att-daycell {
+  background: #eef1f6;
+}
+
+/* Воскресенье — выделяем красным во всех месяцах */
+.att-sunday td {
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.att-sunday .att-daycell {
+  background: #fdecee;
+}
+
+.att-sunday .att-daynum {
+  color: #dc2626;
+}
+
+.att-sunday .att-dow {
+  color: #ef8a8a;
+}
+
+/* Ячейки отметок */
+.att-cell {
+  min-width: 74px;
+  height: 40px;
+  padding: 4px 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: outline-color 0.1s var(--ease);
+}
+
+.att-cell:hover {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* ===== Модалка ячейки ===== */
+.att-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 41, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 50;
+  animation: fade 0.18s var(--ease) both;
+}
+
+.att-modal {
+  background: var(--surface);
+  padding: 24px;
+  border-radius: 18px;
+  width: 340px;
+  max-width: 100%;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  animation: pop-in 0.25s var(--ease) both;
+}
+
+.att-modal h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.att-modal-date {
+  color: var(--text-3);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.att-report {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 4px 0;
+}
+
+.att-report-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-3);
+  margin-bottom: 6px;
+}
+
+.att-report-tasks {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+.att-report-shots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.att-shot {
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--accent);
+  border-radius: 8px;
+  padding: 5px 9px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.att-shot:hover {
+  background: var(--accent-soft);
+}
+
+.att-btn-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.att-status-btn {
+  padding: 13px 8px;
+  border: 1.5px solid;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  background: var(--surface);
+  transition: transform 0.12s var(--ease), filter 0.12s var(--ease), box-shadow 0.12s var(--ease);
+}
+
+.att-status-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(0.97);
+}
+
+.att-status-btn.active {
+  box-shadow: 0 0 0 3px var(--ring);
+}
+
+.att-status-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.att-mode-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 4px;
+}
+
+.att-modal label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  margin-top: 4px;
+}
+
+.att-modal input,
+.att-modal select {
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease), background 0.15s var(--ease);
+}
+
+.att-modal input:focus,
+.att-modal select:focus {
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 0 0 4px var(--ring);
+}
+
+.att-modal-error {
+  color: #dc2626;
+  font-size: 13px;
+  margin: 6px 0 0;
+}
+
+.att-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+.att-modal-actions-right {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.att-modal button {
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.15s var(--ease), filter 0.15s var(--ease), background 0.15s var(--ease);
+}
+
+.att-modal button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.att-btn-primary {
+  background: var(--accent-grad);
+  color: white;
+  box-shadow: 0 5px 14px rgba(37, 99, 235, 0.24);
+}
+
+.att-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.att-btn-secondary {
+  background: var(--surface);
+  color: var(--text-2);
+  border: 1px solid var(--border-strong) !important;
+}
+
+.att-btn-secondary:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+
+.att-btn-clear {
+  background: var(--surface);
+  color: #dc2626;
+  border: 1px solid #fecaca !important;
+}
+
+.att-btn-clear:hover:not(:disabled) {
+  background: #fef2f2;
+}
+
+/* Бейдж статуса */
+.status-badge {
+  display: inline-block;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
