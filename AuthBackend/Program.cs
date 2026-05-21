@@ -1,6 +1,6 @@
 using System.Text;
-using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
+using Fido2NetLib;
 using AuthBackend.Data;
 using AuthBackend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -29,6 +29,15 @@ builder.Services.AddHttpClient<ITelegramService, TelegramService>(client =>
 {
     client.BaseAddress = new Uri("https://api.telegram.org/");
     client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+// WebAuthn (вход по отпечатку / passkey)
+builder.Services.AddMemoryCache();
+builder.Services.AddFido2(options =>
+{
+    options.ServerDomain = "localhost";
+    options.ServerName = "AuthApp";
+    options.Origins = new HashSet<string> { "http://localhost:5173", "https://localhost:7052" };
 });
 
 var jwt = builder.Configuration.GetSection("Jwt");
@@ -80,8 +89,7 @@ builder.Services.AddRateLimiter(options =>
             }));
 });
 
-builder.Services.AddControllers()
-    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>

@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<WorkScheduleSettings> WorkScheduleSettings => Set<WorkScheduleSettings>();
     public DbSet<IntegrationSettings> IntegrationSettings => Set<IntegrationSettings>();
     public DbSet<AttendanceScreenshot> AttendanceScreenshots => Set<AttendanceScreenshot>();
+    public DbSet<PasskeyCredential> PasskeyCredentials => Set<PasskeyCredential>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,5 +49,14 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(u => u.EmployeeId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<PasskeyCredential>(b =>
+        {
+            b.HasIndex(p => p.CredentialId).IsUnique();
+            b.HasOne(p => p.User)
+                .WithMany()
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
     }
 }

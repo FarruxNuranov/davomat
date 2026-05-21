@@ -34,6 +34,15 @@ api.interceptors.response.use(
 
 export const login = (data) => api.post("/auth/login", data);
 export const getMe = () => api.get("/users/me");
+export const changePassword = (data) => api.post("/users/change-password", data);
+
+// Вход по отпечатку (WebAuthn / passkey) — только админ
+export const webauthnRegisterBegin = () => api.post("/webauthn/register/begin");
+export const webauthnRegisterComplete = (data) => api.post("/webauthn/register/complete", data);
+export const webauthnLoginBegin = () => api.post("/webauthn/login/begin");
+export const webauthnLoginComplete = (data) => api.post("/webauthn/login/complete", data);
+export const webauthnStatus = () => api.get("/webauthn/status");
+export const webauthnRemove = () => api.delete("/webauthn/passkeys");
 
 export const getEmployees = () => api.get("/employees");
 export const getEmployee = (id) => api.get(`/employees/${id}`);

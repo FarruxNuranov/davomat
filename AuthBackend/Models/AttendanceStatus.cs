@@ -1,5 +1,8 @@
+using System.Text.Json.Serialization;
+
 namespace AuthBackend.Models;
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum AttendanceStatus
 {
     /// <summary>Пришёл вовремя.</summary>

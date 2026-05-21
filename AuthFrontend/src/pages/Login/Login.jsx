@@ -1,14 +1,36 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login, setAccessToken } from "../../api/authApi";
+import {
+  login,
+  setAccessToken,
+  webauthnLoginBegin,
+  webauthnLoginComplete,
+} from "../../api/authApi";
+import { supportsWebAuthn, getAssertion } from "../../utils/webauthn";
 import "./Login.css";
+
+function storeSession(data) {
+  setAccessToken(data.accessToken);
+  localStorage.setItem("user", JSON.stringify({
+    userId: data.userId,
+    email: data.email,
+    firstName: data.firstName,
+    lastName: data.lastName,
+    phoneNumber: data.phoneNumber,
+    role: data.role,
+    employeeId: data.employeeId,
+  }));
+}
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fpLoading, setFpLoading] = useState(false);
   const navigate = useNavigate();
+
+  const go = (role) => navigate(role === "Employee" ? "/dashboard/my" : "/dashboard");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,23 +38,34 @@ export default function Login() {
     setLoading(true);
     try {
       const { data } = await login({ email, password });
-      setAccessToken(data.accessToken);
-      localStorage.setItem("user", JSON.stringify({
-        userId: data.userId,
-        email: data.email,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        phoneNumber: data.phoneNumber,
-        role: data.role,
-        employeeId: data.employeeId,
-      }));
-      navigate(data.role === "Employee" ? "/dashboard/my" : "/dashboard");
+      storeSession(data);
+      go(data.role);
     } catch (err) {
       const status = err.response?.status;
       if (status === 429) setError("Слишком много попыток. Повторите через минуту.");
       else setError(err.response?.data?.message || "Не удалось войти");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loginByFingerprint = async () => {
+    setError("");
+    setFpLoading(true);
+    try {
+      const { data } = await webauthnLoginBegin();
+      const assertion = await getAssertion(data.options);
+      const { data: auth } = await webauthnLoginComplete({ key: data.key, response: assertion });
+      storeSession(auth);
+      go(auth.role);
+    } catch (err) {
+      if (err?.name === "NotAllowedError" || err?.name === "AbortError") {
+        // пользователь отменил — молча
+      } else {
+        setError(err.response?.data?.message || "Не удалось войти по отпечатку.");
+      }
+    } finally {
+      setFpLoading(false);
     }
   };
 
@@ -68,6 +101,20 @@ export default function Login() {
         <button type="submit" disabled={loading}>
           {loading ? "Вход..." : "Войти"}
         </button>
+
+        {supportsWebAuthn() && (
+          <>
+            <div className="login-divider"><span>или</span></div>
+            <button
+              type="button"
+              className="login-fp"
+              onClick={loginByFingerprint}
+              disabled={fpLoading}
+            >
+              {fpLoading ? "Проверка..." : "🔑 Войти по отпечатку"}
+            </button>
+          </>
+        )}
       </form>
     </div>
   );
