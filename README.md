@@ -28,6 +28,15 @@ npm install
 npm run dev   # http://localhost:5173
 ```
 
+### Telegram-бот
+```bash
+cd DavomatBot
+npm install
+cp .env.example .env   # впишите BOT_TOKEN
+npm run dev
+```
+
 ## Структура
 - `AuthBackend/` — API (контроллеры, сервисы, EF-модели, миграции).
 - `AuthFrontend/` — SPA (страницы, компоненты, API-клиент).
+- `DavomatBot/` — Telegram-бот (Node.js + telegraf), каркас.

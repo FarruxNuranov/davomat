@@ -12,6 +12,39 @@ const empty = {
   loginPassword: "",
 };
 
+// Сильный пароль без неоднозначных символов.
+function genPassword(len = 12) {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#$%";
+  const rnd = crypto.getRandomValues(new Uint32Array(len));
+  let p = "";
+  for (let i = 0; i < len; i++) p += chars[rnd[i] % chars.length];
+  return p;
+}
+
+function CredRow({ label, value }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200);
+    } catch {
+      /* буфер недоступен */
+    }
+  };
+  return (
+    <div className="cred-row">
+      <div className="cred-text">
+        <span className="cred-label">{label}</span>
+        <span className="cred-value">{value}</span>
+      </div>
+      <button type="button" className="cred-copy" onClick={copy}>
+        {copied ? "✓" : "Копировать"}
+      </button>
+    </div>
+  );
+}
+
 export default function EmployeeModal({ employee, onClose, onSubmit }) {
   const isEdit = Boolean(employee);
   const [form, setForm] = useState(
@@ -30,8 +63,21 @@ export default function EmployeeModal({ employee, onClose, onSubmit }) {
   );
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [creds, setCreds] = useState(null); // листок с данными для входа
 
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+  // При вводе email впервые — авто-генерируем пароль.
+  const onLoginEmailChange = (e) => {
+    const value = e.target.value;
+    setForm((f) => ({
+      ...f,
+      loginEmail: value,
+      loginPassword: value && !f.loginPassword ? genPassword() : f.loginPassword,
+    }));
+  };
+
+  const regenerate = () => setForm((f) => ({ ...f, loginPassword: genPassword() }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,7 +94,7 @@ export default function EmployeeModal({ employee, onClose, onSubmit }) {
 
     setSubmitting(true);
     try {
-      await onSubmit({
+      const payload = {
         firstName: form.firstName,
         lastName: form.lastName,
         phoneNumber: form.phoneNumber,
@@ -57,8 +103,19 @@ export default function EmployeeModal({ employee, onClose, onSubmit }) {
         workEndTime: toApiTime(form.workEndTime),
         loginEmail: form.loginEmail.trim() || null,
         loginPassword: form.loginPassword.trim() || null,
-      });
-      onClose();
+      };
+      await onSubmit(payload);
+
+      // Если задали логин с паролем — показываем листок для копирования.
+      if (payload.loginEmail && payload.loginPassword) {
+        setCreds({
+          name: `${form.firstName} ${form.lastName}`.trim(),
+          email: payload.loginEmail,
+          password: payload.loginPassword,
+        });
+      } else {
+        onClose();
+      }
     } catch (err) {
       const status = err.response?.status;
       setError(
@@ -70,6 +127,38 @@ export default function EmployeeModal({ employee, onClose, onSubmit }) {
     }
   };
 
+  const copyAll = async () => {
+    const text = `Сотрудник: ${creds.name}\nЛогин: ${creds.email}\nПароль: ${creds.password}`;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      /* буфер недоступен */
+    }
+  };
+
+  // ===== Листок с данными для входа =====
+  if (creds) {
+    return (
+      <div className="modal-backdrop" onClick={onClose}>
+        <div className="modal" onClick={(e) => e.stopPropagation()}>
+          <h2>Данные для входа</h2>
+          <p className="modal-hint">Передайте сотруднику. Пароль больше не будет показан — скопируйте сейчас.</p>
+
+          <CredRow label="Сотрудник" value={creds.name} />
+          <CredRow label="Логин (email)" value={creds.email} />
+          <CredRow label="Пароль" value={creds.password} />
+
+          <button type="button" className="cred-copy-all" onClick={copyAll}>Скопировать всё</button>
+
+          <div className="modal-actions">
+            <button type="button" onClick={onClose}>Готово</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ===== Форма сотрудника =====
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <form className="modal" onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
@@ -100,19 +189,22 @@ export default function EmployeeModal({ employee, onClose, onSubmit }) {
           type="email"
           name="loginEmail"
           value={form.loginEmail}
-          onChange={onChange}
+          onChange={onLoginEmailChange}
           placeholder="email для входа"
           autoComplete="off"
         />
-        <input
-          type="password"
-          name="loginPassword"
-          value={form.loginPassword}
-          onChange={onChange}
-          placeholder={employee?.hasLogin ? "пароль · пусто = не менять" : "пароль (мин. 8 символов)"}
-          autoComplete="new-password"
-        />
-        <p className="modal-hint">Сотрудник войдёт с этим email/паролем и увидит только свой календарь.</p>
+        <div className="modal-time-row">
+          <input
+            type="text"
+            value={form.loginPassword}
+            readOnly
+            placeholder={employee?.hasLogin ? "пароль не меняется" : "появится после ввода email"}
+          />
+          <button type="button" className="row-btn" onClick={regenerate} title="Сгенерировать пароль">🎲</button>
+        </div>
+        <p className="modal-hint">
+          Пароль генерируется автоматически. После сохранения покажем листок с логином и паролем.
+        </p>
 
         {error && <p className="modal-error">{error}</p>}
 
